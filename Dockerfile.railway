@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+
+# Install Node.js for gateway
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy backend (agent + gateway)
+COPY backend/agent ./backend/agent
+COPY backend/gateway ./backend/gateway
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r ./backend/agent/requirements.txt
+
+# Install Node dependencies for gateway
+WORKDIR /app/backend/gateway
+RUN npm install
+
+# Copy frontend build (we'll build it during deployment)
+COPY frontend ./frontend
+WORKDIR /app/frontend
+RUN npm install && npm run build
+
+# Copy sandbox module (we'll run code safely without separate container)
+COPY sandbox_module ./sandbox_module
+
+# Create workspace directory
+RUN mkdir -p /workspace
+
+# Copy startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 3000 3001
+
+CMD ["/start.sh"]
