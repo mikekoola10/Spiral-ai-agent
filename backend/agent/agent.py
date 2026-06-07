@@ -35,7 +35,7 @@ class SpiralAgent:
         name = tool_call.function.name
         if name == "execute_python":
             async with aiohttp.ClientSession() as session:
-                async with session.post("http://sandbox:8080/run", json={"code": args["code"]}) as resp:
+                async with session.post("http://localhost:8080/run", json={"code": args["code"]}) as resp:
                     data = await resp.json()
                     return data.get("output", "No output")
         elif name == "search_web":

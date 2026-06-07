@@ -8,10 +8,10 @@ python3 docker/sandbox/sandbox_server.py &
 echo "Starting Gateway server..."
 cd backend/gateway && npm start &
 
-# Serve Frontend
-echo "Serving Frontend..."
+# Serve Frontend on Render's PORT or default to 3000
+echo "Serving Frontend on port ${PORT:-3000}..."
 cd /app/frontend/build
-python3 -m http.server 3000 &
+python3 -m http.server ${PORT:-3000} &
 
 # Wait for all processes
 wait -n
