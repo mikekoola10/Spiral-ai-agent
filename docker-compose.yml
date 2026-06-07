@@ -1,18 +1,11 @@
 version: '3.8'
 services:
-  sandbox:
-    build: ./docker/sandbox
-    ports:
-      - "8080:8080"
-  gateway:
-    build: ./backend/gateway
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.railway
     environment:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
     ports:
-      - "3001:3001"
-    depends_on:
-      - sandbox
-  frontend:
-    build: ./frontend
-    ports:
       - "3000:3000"
+      - "3001:3001"
