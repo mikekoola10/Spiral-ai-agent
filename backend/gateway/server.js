@@ -5,6 +5,9 @@ const app = express();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Serve static files for Helix UI
+app.use(express.static('public'));
+
 // GET / – health check
 app.get('/', (req, res) => {
   res.send('🌀 Spiral AI Agent is live. Use POST /chat to talk to me, or POST /create-card for a virtual card.');
