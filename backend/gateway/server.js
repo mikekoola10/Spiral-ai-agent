@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const app = express();
 
 // Middleware to parse JSON bodies
@@ -49,9 +50,13 @@ app.post('/create-card', async (req, res) => {
     return res.status(400).json({ error: 'Missing "name" or "limit" (in dollars)' });
   }
 
-  const agentcardJwt = process.env.AGENTCARD_JWT;
+  let agentcardJwt = process.env.AGENTCARD_JWT;
   if (!agentcardJwt) {
-    return res.status(500).json({ error: 'AgentCard JWT not configured' });
+    try {
+      agentcardJwt = fs.readFileSync('/etc/secrets/AGENTCARD_JWT', 'utf8').trim();
+    } catch (err) {
+      return res.status(500).json({ error: 'AgentCard JWT not configured (secret file missing)' });
+    }
   }
 
   try {
