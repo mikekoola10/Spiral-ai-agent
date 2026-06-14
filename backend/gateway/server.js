@@ -1,16 +1,18 @@
 const express = require('express');
+const path = require('path');
 const fs = require('fs');
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Serve static files for Helix UI
-app.use(express.static('public'));
+// Serve static files from the 'public' folder (absolute path)
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
 
-// GET / – health check
+// Fallback: if no static file matches, serve index.html for SPA routing
 app.get('/', (req, res) => {
-  res.send('🌀 Spiral AI Agent is live. Use POST /chat to talk to me, or POST /create-card for a virtual card.');
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // POST /chat – uses DeepSeek API
