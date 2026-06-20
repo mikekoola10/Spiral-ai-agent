@@ -21,8 +21,6 @@ COPY backend/agent/ ./backend/agent/
 # Install Python dependencies if any
 RUN pip3 install --no-cache-dir -r backend/agent/requirements.txt || true
 
-# Copy public folder for static files
-COPY public/ ./public/
 
 EXPOSE 3000
 
