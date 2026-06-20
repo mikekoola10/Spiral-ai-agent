@@ -1,4 +1,5 @@
 # Use a base image with both Node and Python
+
 FROM node:18-slim AS node-base
 
 # Install Python and necessary tools
