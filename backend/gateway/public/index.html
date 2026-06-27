@@ -49,6 +49,16 @@
         </div>
 
         <div class="card">
+            <h2>STELLAR_WALLET</h2>
+            <div class="metric">BALANCE: <span id="stellar-balance" class="val">0.00 XLM</span></div>
+            <div style="margin-top: 10px;">
+                <input id="stellar-to" placeholder="Destination G..." style="width: 100%; margin-bottom: 5px; background: #222; color: #fff; border: 1px solid #444; padding: 5px;">
+                <input id="stellar-amount" placeholder="Amount (e.g. 0.01)" style="width: 100%; margin-bottom: 5px; background: #222; color: #fff; border: 1px solid #444; padding: 5px;">
+                <button onclick="sendStellar(event)" style="width: 100%;">SEND_TEST_XLM</button>
+            </div>
+        </div>
+
+        <div class="card">
             <h2>CONTROL_CENTER</h2>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button onclick="triggerMonitor(event)">RUN_DAILY_MONITOR</button>
@@ -63,9 +73,21 @@
     </div>
 
     <script>
+        // Retrieve API Key from prompt or localStorage
+        let API_KEY = localStorage.getItem('SPIRAL_API_KEY') || prompt('Enter ADMIN_API_KEY:');
+        if (API_KEY) localStorage.setItem('SPIRAL_API_KEY', API_KEY);
+
         async function safeFetch(url, options = {}) {
             try {
+                options.headers = {
+                    ...options.headers,
+                    'x-api-key': API_KEY
+                };
                 const response = await fetch(url, options);
+                if (response.status === 401) {
+                    localStorage.removeItem('SPIRAL_API_KEY');
+                    location.reload();
+                }
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.json();
             } catch (e) {
@@ -108,6 +130,9 @@
             document.getElementById('uptime').innerText = data.uptime;
             document.getElementById('autonomy').innerText = `${(data.autonomy * 100).toFixed(0)}%`;
 
+            // Stellar
+            document.getElementById('stellar-balance').innerText = `${data.stellar.balance} ${data.stellar.asset}`;
+
             // Log a tick
             const logs = document.getElementById('logs');
             const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
@@ -130,6 +155,30 @@
             } else {
                 await safeFetch('/compliance/kill-switch/reset', {method: 'POST'});
             }
+            update();
+        }
+
+        async function sendStellar(event) {
+            const btn = event.target;
+            const to = document.getElementById('stellar-to').value;
+            const amount = document.getElementById('stellar-amount').value;
+            if (!to || !amount) return alert('Enter destination and amount');
+
+            btn.disabled = true;
+            btn.innerText = 'SENDING...';
+            const res = await safeFetch('/admin/stellar/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to, amount })
+            });
+
+            if (res && res.success) {
+                alert('Payment successful! Hash: ' + res.hash);
+            } else {
+                alert('Error: ' + (res ? res.error : 'Unknown error'));
+            }
+            btn.disabled = false;
+            btn.innerText = 'SEND_TEST_XLM';
             update();
         }
 

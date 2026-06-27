@@ -1,1 +1,1 @@
-{"name":"spiral-gateway","version":"1.0.0","dependencies":{"express":"^4.18.2"},"scripts":{"start":"node server.js"}}
+{"name":"spiral-gateway","version":"1.0.0","dependencies":{"express":"^4.18.2","stellar-sdk":"^13.3.0"},"scripts":{"start":"node server.js"}}
