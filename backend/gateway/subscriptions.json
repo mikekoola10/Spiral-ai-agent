@@ -1,0 +1,58 @@
+[
+  {
+    "id": "fly-io",
+    "name": "Fly.io",
+    "type": "one-time",
+    "amount": 221,
+    "status": "paid",
+    "description": "Overdue invoice"
+  },
+  {
+    "id": "playstation",
+    "name": "PlayStation",
+    "type": "one-time",
+    "amount": 110,
+    "status": "paid",
+    "description": "Single-use card"
+  },
+  {
+    "id": "youtube",
+    "name": "YouTube",
+    "type": "monthly",
+    "amount": 14,
+    "due_day": 1,
+    "card_limit": 14
+  },
+  {
+    "id": "zeus",
+    "name": "Zeus",
+    "type": "monthly",
+    "amount": 10,
+    "due_day": 1,
+    "card_limit": 10
+  },
+  {
+    "id": "prime",
+    "name": "Amazon Prime",
+    "type": "monthly",
+    "amount": 15,
+    "due_day": 1,
+    "card_limit": 15
+  },
+  {
+    "id": "hulu",
+    "name": "Hulu",
+    "type": "monthly",
+    "amount": 8,
+    "due_day": 1,
+    "card_limit": 8
+  },
+  {
+    "id": "starz",
+    "name": "Starz",
+    "type": "monthly",
+    "amount": 11,
+    "due_day": 1,
+    "card_limit": 11
+  }
+]
