@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-card": {
+      "source": "tiny-agent-company/agent-card-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "b861c305771e4bd0809cc74cbcb6066dcf79085d8196ec272af28349fafdfc8a"
+    }
+  }
+}
