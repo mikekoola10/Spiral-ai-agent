@@ -1,0 +1,27 @@
+[
+  {
+    "subscription_id": "youtube",
+    "next_billing_date": "2026-07-01",
+    "status": "scheduled"
+  },
+  {
+    "subscription_id": "zeus",
+    "next_billing_date": "2026-07-01",
+    "status": "scheduled"
+  },
+  {
+    "subscription_id": "prime",
+    "next_billing_date": "2026-07-01",
+    "status": "scheduled"
+  },
+  {
+    "subscription_id": "hulu",
+    "next_billing_date": "2026-07-01",
+    "status": "scheduled"
+  },
+  {
+    "subscription_id": "starz",
+    "next_billing_date": "2026-07-01",
+    "status": "scheduled"
+  }
+]
