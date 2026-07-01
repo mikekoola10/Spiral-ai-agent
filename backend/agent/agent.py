@@ -10,6 +10,11 @@ TOOLS = [
     {"type": "function", "function": {"name": "execute_python", "description": "Run Python code in sandbox", "parameters": {"type": "object", "properties": {"code": {"type": "string"}}, "required": ["code"]}}},
     {"type": "function", "function": {"name": "search_web", "description": "Web search", "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}}},
     {"type": "function", "function": {"name": "read_file", "description": "Read file from /workspace", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}}},
+    {"type": "function", "function": {"name": "mcp__agent_cards__list_cards", "description": "List all AgentCard virtual cards", "parameters": {"type": "object", "properties": {}}}},
+    {"type": "function", "function": {"name": "mcp__agent_cards__create_card", "description": "Create a new virtual Visa card", "parameters": {"type": "object", "properties": {"amount": {"type": "number", "description": "Amount in dollars (e.g. 50)"}, "name": {"type": "string", "description": "Optional card name"}}, "required": ["amount"]}}},
+    {"type": "function", "function": {"name": "mcp__agent_cards__check_balance", "description": "Check live balance of an AgentCard", "parameters": {"type": "object", "properties": {"card_id": {"type": "string", "description": "The ID of the card"}}, "required": ["card_id"]}}},
+    {"type": "function", "function": {"name": "mcp__agent_cards__list_transactions", "description": "List transactions for a specific card", "parameters": {"type": "object", "properties": {"card_id": {"type": "string", "description": "The ID of the card"}}, "required": ["card_id"]}}},
+    {"type": "function", "function": {"name": "mcp__agent_cards__get_plan", "description": "Show current plan and card limits", "parameters": {"type": "object", "properties": {}}}},
 ]
 
 class SpiralAgent:
@@ -46,4 +51,30 @@ class SpiralAgent:
                     return f.read()
             except Exception as e:
                 return f"File read error: {e}"
+        elif name == "mcp__agent_cards__list_cards":
+            return await self._run_cli(["agent-cards", "cards", "list"])
+        elif name == "mcp__agent_cards__create_card":
+            cmd = ["agent-cards", "cards", "create", "--amount", str(args["amount"]), "--json"]
+            if "name" in args:
+                # Assuming future CLI support or safe to pass if handled by shell
+                # Note: Currently CLI may fail if --name is unknown, so we use it cautiously
+                pass
+            return await self._run_cli(cmd)
+        elif name == "mcp__agent_cards__check_balance":
+            return await self._run_cli(["agent-cards", "balance", args["card_id"]])
+        elif name == "mcp__agent_cards__list_transactions":
+            return await self._run_cli(["agent-cards", "transactions", args["card_id"]])
+        elif name == "mcp__agent_cards__get_plan":
+            return await self._run_cli(["agent-cards", "plan"])
         return "Unknown tool"
+
+    async def _run_cli(self, cmd):
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
+        if process.returncode != 0:
+            return f"Error executing {cmd[0]}: {stderr.decode().strip()}"
+        return stdout.decode().strip()

@@ -1,0 +1,37 @@
+[
+  {
+    "subscription_id": "youtube",
+    "name": "YouTube Premium",
+    "next_payment": "2024-07-01",
+    "status": "scheduled",
+    "card_ids": []
+  },
+  {
+    "subscription_id": "zeus",
+    "name": "Zeus Network",
+    "next_payment": "2024-07-01",
+    "status": "scheduled",
+    "card_ids": []
+  },
+  {
+    "subscription_id": "prime",
+    "name": "Amazon Prime",
+    "next_payment": "2024-07-01",
+    "status": "scheduled",
+    "card_ids": []
+  },
+  {
+    "subscription_id": "hulu",
+    "name": "Hulu",
+    "next_payment": "2024-07-01",
+    "status": "scheduled",
+    "card_ids": []
+  },
+  {
+    "subscription_id": "starz",
+    "name": "Starz",
+    "next_payment": "2024-07-01",
+    "status": "scheduled",
+    "card_ids": []
+  }
+]
