@@ -1,14 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Spiral AI Agent – Jarvis‑like interface" />
-    <title>Spiral – Autonomous AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Admin</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; line-height: 1.4; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .card { border: 1px solid #333; padding: 15px; background: #111; }
+        .status { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+        .online { background: #0f0; box-shadow: 0 0 5px #0f0; }
+        .offline { background: #f00; }
+        h1, h2 { color: #fff; margin-top: 0; }
+        button { background: #333; color: #fff; border: 1px solid #555; padding: 8px 12px; cursor: pointer; font-family: monospace; }
+        button:hover { background: #444; }
+        button:disabled { opacity: 0.5; }
+        .red { color: #f00; border-color: #f00; }
+        .red:hover { background: #300; }
+        pre { font-size: 12px; overflow-x: auto; color: #aaa; }
+        .metric { margin-bottom: 5px; }
+        .val { color: #fff; }
+    </style>
 </head>
 <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>AGENT_ADMIN_PANEL v1.5</h1>
+        <div>
+            <span id="status-dot" class="status online"></span>
+            <span id="status-text">SYSTEM_NOMINAL</span>
+        </div>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <h2>FINANCIAL_LEDGER</h2>
+            <div class="metric">SPENDABLE: <span id="balance" class="val">$0.00</span></div>
+            <div class="metric">OPERATIONS: <span id="operations" class="val">$0.00</span></div>
+            <div class="metric">TOTAL_REVENUE: <span id="revenue" class="val">$0.00</span></div>
+            <div class="metric">TOTAL_COSTS: <span id="costs" class="val">$0.00</span></div>
+            <div style="margin-top:10px;">ROI_RATIO: <span id="roi" class="val">0.00</span>x</div>
+        </div>
+
+        <div class="card">
+            <h2>SWARM_NETWORK</h2>
+            <div class="metric">ACTIVE_SWARMS: <span id="active-swarms" class="val">0</span></div>
+            <div class="metric">UPTIME: <span id="uptime" class="val">0s</span></div>
+            <div class="metric">AUTONOMY: <span id="autonomy" class="val">0%</span></div>
+        </div>
+
+        <div class="card">
+            <h2>STELLAR_WALLET</h2>
+            <div class="metric">BALANCE: <span id="stellar-balance" class="val">0.00 XLM</span></div>
+            <div style="margin-top: 10px;">
+                <input id="stellar-to" placeholder="Destination G..." style="width: 100%; margin-bottom: 5px; background: #222; color: #fff; border: 1px solid #444; padding: 5px;">
+                <input id="stellar-amount" placeholder="Amount (e.g. 0.01)" style="width: 100%; margin-bottom: 5px; background: #222; color: #fff; border: 1px solid #444; padding: 5px;">
+                <button onclick="sendStellar(event)" style="width: 100%;">SEND_TEST_XLM</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>CONTROL_CENTER</h2>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="triggerMonitor(event)">RUN_DAILY_MONITOR</button>
+                <button id="kill-btn" class="red" onclick="toggleKillSwitch()">ACTIVATE_KILL_SWITCH</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 15px;">
+        <h2>SYSTEM_LOGS</h2>
+        <pre id="logs">Initializing telemetry...</pre>
+    </div>
+
+    <script>
+        // Retrieve API Key from prompt or localStorage
+        let API_KEY = localStorage.getItem('SPIRAL_API_KEY') || prompt('Enter ADMIN_API_KEY:');
+        if (API_KEY) localStorage.setItem('SPIRAL_API_KEY', API_KEY);
+
+        async function safeFetch(url, options = {}) {
+            try {
+                options.headers = {
+                    ...options.headers,
+                    'x-api-key': API_KEY
+                };
+                const response = await fetch(url, options);
+                if (response.status === 401) {
+                    localStorage.removeItem('SPIRAL_API_KEY');
+                    location.reload();
+                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (e) {
+                console.error(`Fetch failed for ${url}:`, e);
+                return null;
+            }
+        }
+
+        async function update() {
+            const data = await safeFetch('/monitor');
+            if (!data) {
+                document.getElementById('status-dot').className = 'status offline';
+                document.getElementById('status-text').innerText = 'CONNECTION_LOST';
+                return;
+            }
+
+            // Status
+            document.getElementById('status-dot').className = 'status online';
+            document.getElementById('status-text').innerText = data.status;
+
+            if (data.status === 'KILL_SWITCH_ACTIVE') {
+                const btn = document.getElementById('kill-btn');
+                btn.innerText = 'RESET_KILL_SWITCH';
+                btn.className = '';
+            } else {
+                const btn = document.getElementById('kill-btn');
+                btn.innerText = 'ACTIVATE_KILL_SWITCH';
+                btn.className = 'red';
+            }
+
+            // Ledger
+            document.getElementById('balance').innerText = `$${data.revenue.spendable.toFixed(2)}`;
+            document.getElementById('operations').innerText = `$${data.revenue.operations.toFixed(2)}`;
+            document.getElementById('revenue').innerText = `$${data.revenue.total.toFixed(2)}`;
+            document.getElementById('costs').innerText = `$${data.total_costs.toFixed(2)}`;
+            document.getElementById('roi').innerText = data.roi.toFixed(2);
+
+            // Swarm
+            document.getElementById('active-swarms').innerText = data.active_swarms;
+            document.getElementById('uptime').innerText = data.uptime;
+            document.getElementById('autonomy').innerText = `${(data.autonomy * 100).toFixed(0)}%`;
+
+            // Stellar
+            document.getElementById('stellar-balance').innerText = `${data.stellar.balance} ${data.stellar.asset}`;
+
+            // Log a tick
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            logs.innerText = `[${timestamp}] Telemetry update successful\n` + logs.innerText.split('\n').slice(0, 10).join('\n');
+        }
+
+        async function triggerMonitor(event) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerText = 'EXECUTING...';
+            await safeFetch('/grants/monitor', { method: 'POST' });
+            btn.innerText = 'MONITOR_COMPLETE';
+            setTimeout(() => { btn.disabled = false; btn.innerText = 'RUN_DAILY_MONITOR'; }, 2000);
+        }
+
+        async function toggleKillSwitch() {
+            const btn = document.getElementById('kill-btn');
+            if (btn.innerText.includes('ACTIVATE')) {
+                await safeFetch('/compliance/kill-switch', {method: 'POST'});
+            } else {
+                await safeFetch('/compliance/kill-switch/reset', {method: 'POST'});
+            }
+            update();
+        }
+
+        async function sendStellar(event) {
+            const btn = event.target;
+            const to = document.getElementById('stellar-to').value;
+            const amount = document.getElementById('stellar-amount').value;
+            if (!to || !amount) return alert('Enter destination and amount');
+
+            btn.disabled = true;
+            btn.innerText = 'SENDING...';
+            const res = await safeFetch('/admin/stellar/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to, amount })
+            });
+
+            if (res && res.success) {
+                alert('Payment successful! Hash: ' + res.hash);
+            } else {
+                alert('Error: ' + (res ? res.error : 'Unknown error'));
+            }
+            btn.disabled = false;
+            btn.innerText = 'SEND_TEST_XLM';
+            update();
+        }
+
+        setInterval(update, 5000);
+        update();
+    </script>
 </body>
 </html>
